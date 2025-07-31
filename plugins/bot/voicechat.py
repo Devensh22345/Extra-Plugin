@@ -16,16 +16,22 @@ load_dotenv()
 from ChampuMusic.logging import LOGGER
 
 @app.on_message(
-    filters.command(["vcuser", "vcusers", "vcmember", "vcmembers"]) & filters.admin
-    & (filters.user(OWNER_ID) | filters.user(SPECIAL_ID))
+    filters.command(["vcuser", "vcusers", "vcmember", "vcmembers"])
+    & filters.user(OWNER_ID + SPECIAL_ID)
 )
 async def vc_members(client, message):
+    member = await client.get_chat_member(message.chat.id, message.from_user.id)
+    if member.status not in ("administrator", "creator"):
+        return await message.reply("❌ You must be an admin to use this command.")
+    
     try:
         language = await get_lang(message.chat.id)
         _ = get_string(language)
     except:
         _ = get_string("en")
+
     msg = await message.reply_text(_["V_C_1"])
+
     userbot = await get_assistant(message.chat.id)
     TEXT = ""
     try:
